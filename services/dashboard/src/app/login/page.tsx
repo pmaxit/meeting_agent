@@ -17,6 +17,7 @@ import { parseMeetingInput } from "@/lib/parse-meeting-input";
 import { savePendingMeetingUrl } from "@/lib/pending-meeting";
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
+import { APP_NAME } from "@/lib/brand";
 
 type LoginState = "onboarding" | "email" | "sent";
 
@@ -51,7 +52,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/");
+      router.push("/agent");
       return;
     }
     // Hosted mode: redirect to external auth (webapp) instead of showing dashboard login
@@ -127,8 +128,8 @@ export default function LoginPage() {
 
       if (result.success) {
         if (result.mode === "direct") {
-          toast.success(result.isNewUser ? "Account created! Welcome to Vexa." : "Welcome back!");
-          router.push("/");
+          toast.success(result.isNewUser ? `Account created! Welcome to ${APP_NAME}.` : "Welcome back!");
+          router.push("/agent");
           return; // Keep submitting state during redirect
         } else {
           setState("sent");
@@ -186,7 +187,13 @@ export default function LoginPage() {
   };
 
   const isConfigError = healthStatus?.status === "error";
-  const hasWarnings = healthStatus?.status === "degraded";
+  const authNotConfigured =
+    !healthLoading &&
+    !healthStatus?.checks.smtp.configured &&
+    !healthStatus?.checks.googleOAuth.configured &&
+    !healthStatus?.checks.azureAdOAuth?.configured &&
+    healthStatus?.checks.smtp.error?.includes("direct login disabled");
+  const hasWarnings = healthStatus?.status === "degraded" && !authNotConfigured;
   const isDirectMode = healthStatus?.authMode === "direct";
   const isGoogleAuthEnabled = healthStatus?.checks.googleOAuth.configured === true;
   const isMicrosoftAuthEnabled = healthStatus?.checks.azureAdOAuth?.configured === true;
@@ -200,7 +207,7 @@ export default function LoginPage() {
         {/* Large Vexa wordmark */}
         <div className="mb-12 flex flex-col items-center gap-3">
           <Logo size="lg" showText={false} />
-          <span className="text-lg font-semibold tracking-[-0.02em] text-foreground">vexa</span>
+          <span className="text-lg font-semibold tracking-[-0.02em] text-foreground">{APP_NAME}</span>
         </div>
 
         {/* Hero heading */}
@@ -306,7 +313,12 @@ export default function LoginPage() {
         {/* Sign in link */}
         <button
           type="button"
-          onClick={() => setState("email")}
+          onClick={() => {
+            if (canContinue) {
+              savePendingMeetingUrl(meetingInput);
+            }
+            setState("email");
+          }}
           className="mt-10 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Already have an account? Sign in
@@ -325,7 +337,7 @@ export default function LoginPage() {
       {/* Logo */}
       <div className="mb-10 flex flex-col items-center gap-3">
         <Logo size="lg" showText={false} />
-        <span className="text-lg font-semibold tracking-[-0.02em] text-foreground">vexa</span>
+        <span className="text-lg font-semibold tracking-[-0.02em] text-foreground">{APP_NAME}</span>
       </div>
 
       {/* Configuration Error Banner */}
@@ -343,6 +355,22 @@ export default function LoginPage() {
                   {healthStatus.checks.adminApi.error}
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auth not configured */}
+      {!healthLoading && authNotConfigured && (
+        <div className="w-full max-w-md mb-4 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="flex items-start gap-3">
+            <XCircle className="h-5 w-5 text-destructive mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="font-medium text-destructive">Sign-in not configured</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Email login needs SMTP or <code className="text-xs">VEXA_ALLOW_DIRECT_LOGIN=true</code> in{" "}
+                <code className="text-xs">.env.local</code>, then restart the dev server.
+              </p>
             </div>
           </div>
         </div>

@@ -30,6 +30,7 @@ import { AdminAuthModal } from "@/components/admin/admin-auth-modal";
 import { useRuntimeConfig } from "@/hooks/use-runtime-config";
 import { VersionChip } from "@/components/version-chip";
 import { withBasePath } from "@/lib/base-path";
+import { APP_NAME } from "@/lib/brand";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -37,8 +38,8 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { name: "Meetings", href: "/meetings", icon: Video },
   { name: "Meeting Agent", href: "/agent", icon: Bot },
+  { name: "Meetings", href: "/meetings", icon: Video },
   ...(process.env.NEXT_PUBLIC_TRACKER_ENABLED === "true"
     ? [{ name: "Tracker", href: "/tracker", icon: Zap }]
     : []),
@@ -376,7 +377,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             <div className="px-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] text-muted-foreground">vexa</span>
+                <span className="text-[11px] text-muted-foreground">{APP_NAME.toLowerCase()}</span>
                 <VersionChip variant="minimal" look="pill" />
               </div>
             </div>

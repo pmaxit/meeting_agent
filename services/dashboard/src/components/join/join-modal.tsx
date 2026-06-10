@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { DEFAULT_BOT_NAME } from "@/lib/brand";
 import { vexaAPI, VexaAPIError } from "@/lib/api";
 import { useLiveStore } from "@/stores/live-store";
 import { useJoinModalStore } from "@/stores/join-modal-store";
@@ -48,9 +49,9 @@ export function JoinModal() {
   const [transcribeEnabled, setTranscribeEnabled] = useState(true);
   const [botName, setBotName] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("vexa-join-bot-name") || "Vexa";
+      return localStorage.getItem("vexa-join-bot-name") || DEFAULT_BOT_NAME;
     }
-    return "Vexa";
+    return DEFAULT_BOT_NAME;
   });
   const [passcode, setPasscode] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -147,7 +148,7 @@ export function JoinModal() {
       request.meeting_url = parsedInput.originalUrl;
     }
 
-    request.bot_name = botName.trim() || config?.defaultBotName || "Vexa";
+    request.bot_name = botName.trim() || config?.defaultBotName || DEFAULT_BOT_NAME;
 
     if (language && language !== "auto") {
       request.language = language;
@@ -480,7 +481,7 @@ export function JoinModal() {
             </Label>
             <Input
               id="botName"
-              placeholder="Vexa"
+              placeholder={DEFAULT_BOT_NAME}
               value={botName}
               onChange={(e) => setBotName(e.target.value)}
               className="h-10"

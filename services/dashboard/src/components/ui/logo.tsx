@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { withBasePath } from "@/lib/base-path";
+import { APP_NAME, BRAND_LOGO } from "@/lib/brand";
 
 interface LogoProps {
   className?: string;
@@ -32,20 +33,17 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
     setMounted(true);
   }, []);
 
-  // Determine which logo to use based on theme
-  // Use dark logo in light mode, light logo in dark mode (inverse)
   const currentTheme = theme === "system" ? systemTheme : theme;
-  const logoSrc = currentTheme === "dark"
-    ? withBasePath("/icons/vexalight.svg")
-    : withBasePath("/icons/vexadark.svg");
+  const logoSrc = withBasePath(
+    currentTheme === "dark" ? BRAND_LOGO.light : BRAND_LOGO.dark
+  );
 
   if (!mounted) {
-    // Return a placeholder while theme is being determined
     return (
       <div className={cn("flex items-center gap-2", className)}>
-        <div className={cn(sizeClasses[size], "bg-muted rounded-lg animate-pulse")} />
+        <div className={cn(sizeClasses[size], "animate-pulse rounded-xl bg-muted")} />
         {showText && (
-          <span className={cn("font-semibold", textSizeClasses[size])}>Vexa</span>
+          <span className={cn("font-semibold", textSizeClasses[size])}>{APP_NAME}</span>
         )}
       </div>
     );
@@ -55,16 +53,17 @@ export function Logo({ className, size = "md", showText = false }: LogoProps) {
     <div className={cn("flex items-center gap-2", className)}>
       <Image
         src={logoSrc}
-        alt="Vexa Logo"
+        alt={`${APP_NAME} logo`}
         width={size === "sm" ? 24 : size === "md" ? 32 : 48}
         height={size === "sm" ? 24 : size === "md" ? 32 : 48}
         className={cn(sizeClasses[size], "object-contain")}
         priority
       />
       {showText && (
-        <span className={cn("font-semibold", textSizeClasses[size])}>Vexa</span>
+        <span className={cn("font-semibold tracking-[-0.02em]", textSizeClasses[size])}>
+          {APP_NAME}
+        </span>
       )}
     </div>
   );
 }
-

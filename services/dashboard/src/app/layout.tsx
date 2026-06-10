@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { withBasePath } from "@/lib/base-path";
+import { APP_NAME, APP_DESCRIPTION } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -17,18 +18,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vexa Dashboard",
-  description: "Open source meeting transcription dashboard for Vexa",
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
   icons: {
     icon: [
       {
-        url: withBasePath("/icons/vexadark.svg"),
+        url: withBasePath("/icons/novadark.svg"),
         type: "image/svg+xml",
       },
     ],
     apple: [
       {
-        url: withBasePath("/icons/vexadark.svg"),
+        url: withBasePath("/icons/novadark.svg"),
         type: "image/svg+xml",
       },
     ],

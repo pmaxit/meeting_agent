@@ -20,6 +20,8 @@ interface UseLiveTranscriptsOptions {
   meetingId: string;
   isActive: boolean;
   onStatusChange?: (status: MeetingStatus) => void;
+  /** Skip REST bootstrap — use WebSocket-only for a clean live session (agent page). */
+  skipBootstrap?: boolean;
 }
 
 interface UseLiveTranscriptsReturn {
@@ -46,7 +48,7 @@ const MAX_RECONNECT_ATTEMPTS = 10;
 export function useLiveTranscripts(
   options: UseLiveTranscriptsOptions
 ): UseLiveTranscriptsReturn {
-  const { platform, nativeId, meetingId, isActive, onStatusChange } = options;
+  const { platform, nativeId, meetingId, isActive, onStatusChange, skipBootstrap = false } = options;
 
   // Connection state
   const [isConnecting, setIsConnecting] = useState(false);
@@ -100,6 +102,10 @@ export function useLiveTranscripts(
   // Step 1: Bootstrap from REST API
   const bootstrapFromRest = useCallback(async () => {
     if (bootstrappedRef.current) return;
+    if (skipBootstrap) {
+      bootstrappedRef.current = true;
+      return;
+    }
 
     try {
       console.log(`[LiveTranscripts] Bootstrapping from REST API: ${platform}/${nativeId}`);
@@ -114,7 +120,7 @@ export function useLiveTranscripts(
       // Continue anyway - WebSocket will provide segments
       bootstrappedRef.current = true;
     }
-  }, [platform, nativeId, bootstrapTranscripts]);
+  }, [platform, nativeId, bootstrapTranscripts, skipBootstrap]);
 
   // Calculate reconnect delay with exponential backoff
   const getReconnectDelay = useCallback((attempt: number) => {

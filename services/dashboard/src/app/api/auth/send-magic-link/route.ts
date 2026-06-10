@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { sendMagicLinkEmail } from "@/lib/email";
 import { getRegistrationConfig, validateEmailForRegistration } from "@/lib/registration";
 import { findUserByEmail, createUser, createUserToken } from "@/lib/vexa-admin-api";
+import { isDirectLoginAllowed } from "@/lib/direct-login";
 import { cookies } from "next/headers";
 import { getAuthCookieName, getUserInfoCookieName } from "@/lib/auth-cookies";
 
@@ -19,9 +20,8 @@ function isSmtpConfigured(): boolean {
   return !!(smtpHost && smtpUser && smtpPass);
 }
 
-function isDirectLoginAllowed(_request: NextRequest): boolean {
-  const raw = (process.env.VEXA_ALLOW_DIRECT_LOGIN || "").toLowerCase();
-  return ["1", "true", "yes"].includes(raw);
+function isDirectLoginAllowedForRequest(request: NextRequest): boolean {
+  return isDirectLoginAllowed(request.headers.get("origin"));
 }
 
 /**
@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
     // Check if SMTP is configured
     const smtpEnabled = isSmtpConfigured();
 
-    if (!smtpEnabled && isDirectLoginAllowed(request)) {
+    if (!smtpEnabled && isDirectLoginAllowedForRequest(request)) {
       console.log("Direct login enabled for local/dev dashboard:", email);
       return handleDirectLogin(email);
     }

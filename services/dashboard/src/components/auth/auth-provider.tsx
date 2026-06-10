@@ -7,7 +7,7 @@ import { savePendingMeetingUrl } from "@/lib/pending-meeting";
 import { Loader2 } from "lucide-react";
 
 // Routes that don't require authentication
-const publicRoutes = ["/login", "/auth/verify", "/auth/zoom/callback", "/agent"];
+const publicRoutes = ["/login", "/auth/verify", "/auth/zoom/callback"];
 
 function isPublicPath(pathname: string) {
   return publicRoutes.some((route) => pathname.startsWith(route));

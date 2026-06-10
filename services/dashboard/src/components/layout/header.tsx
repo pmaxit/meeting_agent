@@ -22,6 +22,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/stores/auth-store";
 import { getDocsUrl } from "@/lib/docs/webapp-url";
 import { useRuntimeConfig } from "@/hooks/use-runtime-config";
+import { APP_NAME } from "@/lib/brand";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -55,7 +56,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center gap-2.5">
           <Link href="/" className="flex items-center gap-2 group">
             <Logo size="md" showText={false} className="group-hover:scale-105 transition-transform" />
-            <span className="hidden sm:inline-block text-[15px] font-semibold tracking-[-0.01em] text-foreground">vexa</span>
+            <span className="hidden sm:inline-block text-[15px] font-semibold tracking-[-0.01em] text-foreground">{APP_NAME}</span>
           </Link>
           <VersionChip className="hidden sm:inline-flex" />
         </div>

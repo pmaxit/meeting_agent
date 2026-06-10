@@ -11,6 +11,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAgentStore, AgentMessage } from "@/stores/agent-store";
+import { APP_NAME } from "@/lib/brand";
 import { useAuthStore } from "@/stores/auth-store";
 
 const AGENT_API = process.env.NEXT_PUBLIC_AGENT_API_URL || "/api/agent";
@@ -342,7 +343,7 @@ export function AgentChat() {
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-sm">
-              {useAgentStore.getState().sessions.find(s => s.id === activeSessionId)?.name || "Vexa Agent"}
+              {useAgentStore.getState().sessions.find(s => s.id === activeSessionId)?.name || `${APP_NAME} Agent`}
             </h2>
             {isStreaming && (
               <Badge variant="secondary" className="text-xs">

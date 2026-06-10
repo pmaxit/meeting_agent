@@ -19,6 +19,30 @@ class VexaAPIError extends Error {
   }
 }
 
+const BOT_REPLACE_DELAY_MS = 750;
+const BOT_REPLACE_MAX_ATTEMPTS = 4;
+const ACTIVE_BOT_STATUSES = new Set([
+  "requested",
+  "joining",
+  "awaiting_admission",
+  "active",
+  "stopping",
+]);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isDuplicateMeetingError(error: unknown): boolean {
+  if (!(error instanceof VexaAPIError)) return false;
+  if (error.status === 409) return true;
+  return error.message.toLowerCase().includes("already exists");
+}
+
+function normalizeMeetingUrl(url: string): string {
+  return url.trim().replace(/\/$/, "").toLowerCase();
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorText = await response.text();
@@ -221,14 +245,84 @@ export const vexaAPI = {
   },
 
   // Bots
-  async createBot(request: CreateBotRequest): Promise<Meeting> {
-    const response = await fetch(withBasePath("/api/vexa/bots"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    });
-    const raw = await handleResponse<RawMeeting>(response);
-    return mapMeeting(raw);
+  async stopBotIfExists(platform: Platform, nativeId: string): Promise<void> {
+    if (!nativeId) return;
+    try {
+      await this.stopBot(platform, nativeId);
+    } catch (error) {
+      if (error instanceof VexaAPIError && error.status === 404) return;
+      if (error instanceof VexaAPIError && error.status >= 400 && error.status < 500) return;
+      throw error;
+    }
+  },
+
+  async stopConflictingBots(request: CreateBotRequest): Promise<void> {
+    const { platform, native_meeting_id: nativeId, meeting_url: meetingUrl } = request;
+
+    if (nativeId) {
+      await this.stopBotIfExists(platform, nativeId);
+    }
+
+    try {
+      const { meetings } = await this.getMeetings({ platform, limit: 30 });
+      const normalizedUrl = meetingUrl ? normalizeMeetingUrl(meetingUrl) : null;
+
+      for (const meeting of meetings) {
+        if (!ACTIVE_BOT_STATUSES.has(meeting.status)) continue;
+
+        const sameNativeId = nativeId && meeting.platform_specific_id === nativeId;
+        const storedUrl =
+          typeof meeting.data?.meeting_url === "string" ? meeting.data.meeting_url : null;
+        const sameUrl =
+          normalizedUrl && storedUrl
+            ? normalizeMeetingUrl(storedUrl) === normalizedUrl
+            : false;
+
+        if (sameNativeId || sameUrl) {
+          await this.stopBotIfExists(platform, meeting.platform_specific_id);
+        }
+      }
+    } catch {
+      // Best effort — createBot retry will still handle 409.
+    }
+  },
+
+  async createBot(
+    request: CreateBotRequest,
+    options?: { replaceExisting?: boolean }
+  ): Promise<Meeting> {
+    const replaceExisting = options?.replaceExisting ?? true;
+
+    const postBot = async () => {
+      const response = await fetch(withBasePath("/api/vexa/bots"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
+      });
+      const raw = await handleResponse<RawMeeting>(response);
+      return mapMeeting(raw);
+    };
+
+    if (replaceExisting) {
+      await this.stopConflictingBots(request);
+      await sleep(BOT_REPLACE_DELAY_MS);
+    }
+
+    const attempts = replaceExisting ? BOT_REPLACE_MAX_ATTEMPTS : 1;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      try {
+        return await postBot();
+      } catch (error) {
+        const canRetry =
+          replaceExisting && isDuplicateMeetingError(error) && attempt < attempts - 1;
+        if (!canRetry) throw error;
+
+        await this.stopConflictingBots(request);
+        await sleep(BOT_REPLACE_DELAY_MS * (attempt + 1));
+      }
+    }
+
+    throw new VexaAPIError("Failed to create bot after stopping existing sessions", 409);
   },
 
   async stopBot(platform: Platform, nativeId: string): Promise<void> {

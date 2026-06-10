@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { APP_NAME } from "@/lib/brand";
 
 interface SendEmailOptions {
   to: string;
@@ -52,7 +53,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions): 
  * Send magic link email for authentication
  */
 export async function sendMagicLinkEmail(email: string, magicLink: string): Promise<void> {
-  const appName = "Vexa";
+  const appName = APP_NAME;
 
   const html = `
     <!DOCTYPE html>

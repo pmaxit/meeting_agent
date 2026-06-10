@@ -8,6 +8,7 @@ import { cn, parseUTCTimestamp } from "@/lib/utils";
 import { vexaAPI } from "@/lib/api";
 import { toast } from "sonner";
 import type { MeetingStatus, Platform } from "@/types/vexa";
+import { DEFAULT_BOT_NAME } from "@/lib/brand";
 import { DocsLink } from "@/components/docs/docs-link";
 
 // Timeout in seconds before showing a warning
@@ -245,7 +246,7 @@ export function BotStatusIndicator({ status, platform, meetingId, createdAt, upd
 
           <p className="text-sm text-muted-foreground max-w-sm">
             {status === "awaiting_admission" ? (
-              <>Look for <span className="font-medium text-foreground">Vexa Bot</span> in your meeting&apos;s waiting room and click admit</>
+              <>Look for <span className="font-medium text-foreground">{DEFAULT_BOT_NAME} Bot</span> in your meeting&apos;s waiting room and click admit</>
             ) : (
               "This usually takes a few seconds"
             )}

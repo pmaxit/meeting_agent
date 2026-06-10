@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isDirectLoginAllowed } from "@/lib/direct-login";
 
 // Force dynamic rendering to avoid Next.js fetch caching issues
 export const dynamic = "force-dynamic";
@@ -33,9 +34,7 @@ export async function GET() {
     missingConfig: [],
   };
 
-  const allowDirectLogin = ["1", "true", "yes"].includes(
-    (process.env.VEXA_ALLOW_DIRECT_LOGIN || "").toLowerCase()
-  );
+  const allowDirectLogin = isDirectLoginAllowed(process.env.NEXT_PUBLIC_APP_URL);
 
   // Check Azure AD / Entra ID OAuth configuration (optional)
   const enableAzureAdAuth = process.env.ENABLE_AZURE_AD_AUTH;

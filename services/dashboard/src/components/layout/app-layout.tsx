@@ -10,7 +10,7 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { NotificationBanner } from "@/components/notifications/notification-banner";
 
 // Routes that don't need the full app layout
-const publicRoutes = ["/login", "/auth", "/docs", "/agent"];
+const publicRoutes = ["/login", "/auth", "/docs"];
 
 function isPublicPath(pathname: string) {
   return publicRoutes.some((route) => pathname.startsWith(route));
@@ -26,6 +26,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Check if current route is public (shouldn't have sidebar/header)
   const isPublicRoute = isPublicPath(pathname);
+
+  // Meeting agent: full-page UI, but still requires auth for API + WebSocket
+  if (pathname.startsWith("/agent")) {
+    return (
+      <AuthProvider>
+        {children}
+        <Toaster position="bottom-right" />
+      </AuthProvider>
+    );
+  }
 
   // For public routes, just render children without the app shell
   if (isPublicRoute) {

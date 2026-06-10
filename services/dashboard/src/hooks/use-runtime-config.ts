@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { withBasePath } from "@/lib/base-path";
+import { DEFAULT_BOT_NAME } from "@/lib/brand";
 
 interface RuntimeConfig {
   wsUrl: string;
@@ -95,7 +96,7 @@ export function getDefaultBotName(): string {
     return cachedConfig.defaultBotName;
   }
   // Fallback to default
-  return "Vexa - Open Source Bot";
+  return DEFAULT_BOT_NAME;
 }
 
 /**
