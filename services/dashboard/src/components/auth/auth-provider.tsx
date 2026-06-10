@@ -7,7 +7,11 @@ import { savePendingMeetingUrl } from "@/lib/pending-meeting";
 import { Loader2 } from "lucide-react";
 
 // Routes that don't require authentication
-const publicRoutes = ["/login", "/auth/verify", "/auth/zoom/callback"];
+const publicRoutes = ["/login", "/auth/verify", "/auth/zoom/callback", "/agent"];
+
+function isPublicPath(pathname: string) {
+  return publicRoutes.some((route) => pathname.startsWith(route));
+}
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -33,13 +37,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Check if current route is public
-  const isPublicRoute = publicRoutes.some((route) => pathname?.startsWith(route));
+  const isPublicRoute = pathname ? isPublicPath(pathname) : false;
 
   // Only verify session on protected routes to avoid 401 in console on /login, /auth/zoom/callback
   useEffect(() => {
     if (pathname == null) {
       checkAuth(); // path not yet known
-    } else if (!publicRoutes.some((route) => pathname.startsWith(route))) {
+    } else if (!isPublicPath(pathname)) {
       checkAuth(); // protected route
     }
   }, [pathname, checkAuth]);

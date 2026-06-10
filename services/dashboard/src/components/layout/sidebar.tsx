@@ -38,6 +38,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: "Meetings", href: "/meetings", icon: Video },
+  { name: "Meeting Agent", href: "/agent", icon: Bot },
   ...(process.env.NEXT_PUBLIC_TRACKER_ENABLED === "true"
     ? [{ name: "Tracker", href: "/tracker", icon: Zap }]
     : []),

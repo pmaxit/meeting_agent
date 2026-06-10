@@ -1,11 +1,7 @@
 "use client";
 
-import { AgentChat } from "@/components/agent/agent-chat";
+import { MeetingAgentWebview } from "@/components/agent/meeting-agent-webview";
 
 export default function AgentPage() {
-  return (
-    <div className="h-[calc(100vh-4rem)]">
-      <AgentChat />
-    </div>
-  );
+  return <MeetingAgentWebview />;
 }
