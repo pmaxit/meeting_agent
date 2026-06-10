@@ -25,7 +25,12 @@ BOT_IMAGE := vexa-bot
 
 -include $(ENV_FILE)
 
-COMPOSE_CMD = docker compose --env-file $(ENV_FILE) -f $(COMPOSE_FILE)
+COMPOSE_OVERRIDE := $(dir $(COMPOSE_FILE))docker-compose.override.yml
+COMPOSE_FILES := -f $(COMPOSE_FILE)
+ifneq (,$(wildcard $(COMPOSE_OVERRIDE)))
+COMPOSE_FILES += -f $(COMPOSE_OVERRIDE)
+endif
+COMPOSE_CMD = docker compose --env-file $(ENV_FILE) $(COMPOSE_FILES)
 
 # ============================================================================
 # Main targets
